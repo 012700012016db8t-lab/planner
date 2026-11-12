@@ -46690,7 +46690,10 @@ async function loadFamily() {
   }
   for (const path of FAMILY_CSV_PATHS) {
     try {
-      const response = await fetch(`${"/"}${path}`, { cache: "no-cache" });
+      const base = typeof document === "undefined" ? "/" : document.baseURI;
+      const csvUrl = new URL(path, base);
+      csvUrl.searchParams.set("v", String(Date.now()));
+      const response = await fetch(csvUrl, { cache: "no-store" });
       if (!response.ok) continue;
       const people = parseFamilyCsv(await response.text());
       if (people.length > 0) {
@@ -47190,7 +47193,10 @@ function useToast() {
 function BrandMark({ className = "" }) {
   const [failed, setFailed] = reactExports.useState(false);
   const embeddedLogo = globalThis.__PLANNER_LOGO_DATA__;
-  const src = embeddedLogo || `${"/"}image/logo.png`;
+  const src = embeddedLogo || new URL(
+    "image/logo.png",
+    typeof document === "undefined" ? "/" : document.baseURI
+  ).href;
   if (failed) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `brand__mark brand__fallback ${className}`.trim(), "aria-hidden": "true", children: "P" });
   }
