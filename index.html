@@ -953,6 +953,19 @@ p {
   border-color: var(--faint);
 }
 
+.btn--quick-on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  box-shadow: 0 6px 14px -10px rgba(27, 26, 23, 0.9);
+}
+
+.btn--quick-on:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
 .btn--sm {
   height: 30px;
   padding: 0 11px;
@@ -47812,12 +47825,10 @@ function LoginScreen() {
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Planner" })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "login__headline", children: [
-          "家族の予定を、",
+          "家族カレンダー",
           /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "ひとつの場所" }),
-          "に。"
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "login__lead", children: "今日と明日、そして月のカレンダー。Planner は家族みんなの予定を見渡すための場所です。" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "login__lead", children: "Plannerは家族みんなの予定を見渡すための場所です。" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("ul", { className: "login__points", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(CalendarIcon, { size: 15 }),
@@ -47978,6 +47989,7 @@ function NewPlanSheet() {
   const [submitting, setSubmitting] = reactExports.useState(false);
   const cells = reactExports.useMemo(() => monthGrid(cursor.year, cursor.month), [cursor.year, cursor.month]);
   const today = todayKey();
+  const tomorrow = addDaysKey(today, 1);
   const toggleDate = (key) => {
     setDates(
       (current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key].sort()
@@ -48189,8 +48201,9 @@ function NewPlanSheet() {
               "button",
               {
                 type: "button",
-                className: "btn btn--ghost btn--sm",
+                className: `btn btn--ghost btn--sm${dates.includes(today) ? " btn--quick-on" : ""}`,
                 onClick: () => selectDate(today),
+                "aria-pressed": dates.includes(today),
                 children: "今日"
               }
             ),
@@ -48198,8 +48211,9 @@ function NewPlanSheet() {
               "button",
               {
                 type: "button",
-                className: "btn btn--ghost btn--sm",
-                onClick: () => selectDate(addDaysKey(today, 1)),
+                className: `btn btn--ghost btn--sm${dates.includes(tomorrow) ? " btn--quick-on" : ""}`,
+                onClick: () => selectDate(tomorrow),
+                "aria-pressed": dates.includes(tomorrow),
                 children: "明日"
               }
             ),
