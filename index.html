@@ -1087,7 +1087,14 @@ p {
   letter-spacing: -0.01em;
 }
 
-.cal__tile i {
+.cal__tile__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.cal__tile__dots i {
   width: 4px;
   height: 4px;
   border-radius: 50%;
@@ -47462,14 +47469,19 @@ function MonthCalendar({ plansByDate, members, onSelectDate }) {
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "cal__num", children: date.getDate() }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "cal__tiles", children: dayPlans.slice(0, maxTiles).map((plan) => {
-              const owner = plan.memberIds.map((id2) => memberById.get(id2)).find((member) => Boolean(member));
+              const targetMembers = plan.memberIds.map((id2) => memberById.get(id2)).filter((member) => Boolean(member));
               return /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 "span",
                 {
                   className: "cal__tile",
-                  style: { "--c": owner?.color ?? "var(--brand)" },
                   children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "cal__tile__dots", "aria-hidden": "true", children: (targetMembers.length > 0 ? targetMembers : [null]).map((member, index2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "i",
+                      {
+                        style: { "--c": member?.color ?? "var(--brand)" }
+                      },
+                      member?.id ?? `fallback-${index2}`
+                    )) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "cal__tile__label", children: plan.title })
                   ]
                 },
