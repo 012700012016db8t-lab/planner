@@ -1,0 +1,66 @@
+rules_version = '2';
+
+// Planner — 家族の予定管理
+//
+// 方針:
+//   * ログイン（Firebase Authentication）していない人は、予定を一切読めません。
+//     これが「家族以外は閲覧不可」の実体です。
+//   * ログイン済みなら、家族全員がすべての予定を読み書きできます（共同編集）。
+//   * 予定の形（必須項目・型・長さ）をサーバー側でも検証します。
+//   * members コレクションは読み取りのみ（家族の追加はコンソールから）。
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 予定1件のスキーマ検証
+    function validPlan() {
+      let d = request.resource.data;
+      return d.title is string
+        && d.title.size() >= 1
+        && d.title.size() <= 60
+        && d.date is string
+        && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.groupId is string
+        && d.memberIds is list
+        && d.memberIds.size() >= 1
+        && d.memberIds.size() <= 20
+        && d.createdById is string
+        && d.createdById.size() >= 1
+        && d.createdByName is string
+        && d.createdByName.size() >= 1
+        && d.createdAt is int
+        && (!('startTime' in d) || d.startTime == null
+            || (d.startTime is string && d.startTime.matches('^[0-9]{2}:[0-9]{2}$')))
+        && (!('endTime' in d) || d.endTime == null
+            || (d.endTime is string && d.endTime.matches('^[0-9]{2}:[0-9]{2}$')));
+    }
+
+    match /plans/{planId} {
+      // 認証済みの家族だけが読める
+      allow read: if isSignedIn();
+
+      // 新規作成（複数日の一括登録・削除の取り消しもここを通ります）
+      allow create: if isSignedIn() && validPlan();
+
+      // 編集（いまのアプリは編集機能を持ちませんが、将来用に許可）
+      allow update: if isSignedIn() && validPlan();
+
+      // 削除
+      allow delete: if isSignedIn();
+    }
+
+    // 将来 Firestore で家族を管理する場合の置き場所（読み取りのみ）
+    match /members/{memberId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // それ以外はすべて拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
